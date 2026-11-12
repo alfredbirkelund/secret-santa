@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secret Santa 🎄 Zero-Knowledge Draw</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎁</text></svg>">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Canvas for celebration confetti -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <main class="app-container">
+    <header class="app-header">
+      <div class="header-badge">🎄 Secret Santa</div>
+      <h1 id="app-title">Holiday Gift Exchange</h1>
+      <p id="app-subtitle" class="subtitle">Client-side encrypted, zero-knowledge draw</p>
+    </header>
+
+    <!-- 1. Participant Reveal View (Active when URL hash is present) -->
+    <section id="view-reveal" class="view hidden" aria-live="polite">
+      <div class="card reveal-card">
+        <div class="greeting-bar">
+          <span class="giver-label">Recipient for</span>
+          <h2 id="reveal-giver-name" class="giver-name">—</h2>
+        </div>
+
+        <div id="gift-wrapper" class="gift-wrapper" role="button" tabindex="0" aria-label="Tap to unwrap your gift">
+          <div class="gift-box">
+            <div class="gift-lid">
+              <div class="ribbon-bow"></div>
+              <div class="ribbon-vertical"></div>
+            </div>
+            <div class="gift-body">
+              <div class="ribbon-vertical"></div>
+              <div class="ribbon-horizontal"></div>
+              <div class="tap-hint">Tap to Unwrap 🎁</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="unwrapped-content" class="unwrapped-content hidden">
+          <div class="status-pill">Target Unlocked</div>
+          <p class="target-lead">You are buying a gift for:</p>
+          <div class="recipient-box">
+            <span id="reveal-recipient" class="recipient-name">—</span>
+          </div>
+
+          <div id="meta-details" class="meta-details hidden">
+            <div id="meta-budget-row" class="meta-row hidden">
+              <span class="meta-label">Budget</span>
+              <span id="meta-budget" class="meta-value">—</span>
+            </div>
+            <div id="meta-note-row" class="meta-row hidden">
+              <span class="meta-label">Note</span>
+              <span id="meta-note" class="meta-value">—</span>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button id="btn-copy-recipient" class="btn btn-secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <span>Copy Name</span>
+            </button>
+            <button id="btn-rehide" class="btn btn-outline" title="Hide recipient if someone is near">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+              <span>Hide Again</span>
+            </button>
+          </div>
+        </div>
+
+        <p class="security-footnote">
+          🔒 Decrypted 100% locally in your browser. Nobody else knows who you drew.
+        </p>
+      </div>
+    </section>
+
+    <!-- 2. Error View (Active when invalid/corrupted hash) -->
+    <section id="view-error" class="view hidden">
+      <div class="card error-card">
+        <div class="error-icon">⚠️</div>
+        <h2>Invalid Gift Link</h2>
+        <p id="error-message">This link is incomplete, invalid, or corrupted.</p>
+        <div class="action-row">
+          <a href="#" id="btn-go-home" class="btn btn-primary">Go to Home</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Organizer / Generator View (Active when no hash or when clicked) -->
+    <section id="view-generator" class="view hidden">
+      <div class="card">
+        <div class="generator-intro">
+          <h2>Draw Organizer</h2>
+          <p>
+            Create a zero-knowledge draw for your group. Each person gets a link with their own encrypted key.
+            Even you (the organizer) will not know who drew whom!
+          </p>
+        </div>
+
+        <form id="draw-form" class="draw-form" onsubmit="return false;">
+          <div class="form-group">
+            <label for="input-names">
+              Participants <span class="required">*</span>
+              <span class="label-desc">One name per line (minimum 2 people)</span>
+            </label>
+            <textarea id="input-names" rows="7" placeholder="Alice&#10;Bob&#10;Charlie&#10;David&#10;Emma&#10;Frank&#10;Grace&#10;Henry&#10;Isabella" required></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="input-budget">
+                Budget (optional)
+                <span class="label-desc">e.g. 200 DKK or $25</span>
+              </label>
+              <input type="text" id="input-budget" placeholder="200 DKK" />
+            </div>
+
+            <div class="form-group">
+              <label for="input-note">
+                Note or Date (optional)
+                <span class="label-desc">e.g. Dec 24 at Grandma's</span>
+              </label>
+              <input type="text" id="input-note" placeholder="Exchange on Christmas Eve" />
+            </div>
+          </div>
+
+          <details class="exclusions-accordion">
+            <summary>Exclusion Rules (Couples / Pairs who cannot draw each other)</summary>
+            <div class="exclusions-content">
+              <p class="label-desc">One pair per line: <code>Alice:Bob</code> (neither can draw the other) or <code>Alice->Bob</code> (Alice cannot draw Bob).</p>
+              <textarea id="input-exclusions" rows="3" placeholder="Alice:Bob&#10;Charlie:David"></textarea>
+            </div>
+          </details>
+
+          <button type="submit" id="btn-generate" class="btn btn-primary btn-block">
+            <span>Generate Secret Links 🎲</span>
+          </button>
+        </form>
+
+        <div id="generator-results" class="generator-results hidden">
+          <div class="results-header">
+            <h3>🎁 Secret Santa Links Ready!</h3>
+            <p>Send each link privately to that person (via Discord, WhatsApp, Messenger, etc.). <strong>Do not click them yourself!</strong></p>
+          </div>
+
+          <div class="bulk-actions">
+            <button id="btn-copy-all" class="btn btn-secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <span>Copy All Links</span>
+            </button>
+            <button id="btn-download-txt" class="btn btn-outline">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Download .txt</span>
+            </button>
+          </div>
+
+          <ul id="links-list" class="links-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <footer class="app-footer">
+      <p>Zero-Knowledge Secret Santa • Client-side AES-GCM Encryption • Hosted on GitHub Pages</p>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
