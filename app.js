@@ -453,8 +453,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    const budget = inputBudget.value.trim();
-    const note = inputNote.value.trim();
+    const budget = inputBudget ? inputBudget.value.trim() : "";
+    const note = inputNote ? inputNote.value.trim() : "";
 
     try {
       const pairs = generateDerangementCycle(rawNames, exclusions);
