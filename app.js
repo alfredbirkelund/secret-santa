@@ -24,6 +24,113 @@ function bytesToBase64Url(bytes) {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
+// --- Ambient Winter Snowfall System ---
+class SnowSystem {
+  constructor(canvas) {
+    this.canvas = canvas;
+    if (!this.canvas) return;
+    this.ctx = canvas.getContext("2d");
+    this.flakes = [];
+    this.numFlakes = 40;
+    this.animationId = null;
+    this.reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (this.reducedMotion) return;
+
+    this.resize();
+    this.initFlakes();
+    window.addEventListener("resize", () => this.resize());
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        if (this.animationId) cancelAnimationFrame(this.animationId);
+        this.animationId = null;
+      } else {
+        this.animate();
+      }
+    });
+    this.animate();
+  }
+
+  resize() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  }
+
+  initFlakes() {
+    this.flakes = [];
+    for (let i = 0; i < this.numFlakes; i++) {
+      this.flakes.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height,
+        radius: 1.1 + Math.random() * 2.2,
+        speedY: 0.35 + Math.random() * 0.75,
+        swing: Math.random() * Math.PI * 2,
+        swingSpeed: 0.01 + Math.random() * 0.02,
+        amplitude: 0.4 + Math.random() * 1.0,
+        opacity: 0.15 + Math.random() * 0.45,
+      });
+    }
+  }
+
+  animate() {
+    if (this.reducedMotion) return;
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    for (let i = 0; i < this.flakes.length; i++) {
+      const f = this.flakes[i];
+      f.swing += f.swingSpeed;
+      f.x += Math.sin(f.swing) * f.amplitude;
+      f.y += f.speedY;
+
+      if (f.y > this.canvas.height + 5) {
+        f.y = -5;
+        f.x = Math.random() * this.canvas.width;
+      }
+      if (f.x > this.canvas.width + 5) f.x = -5;
+      if (f.x < -5) f.x = this.canvas.width + 5;
+
+      this.ctx.beginPath();
+      this.ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+      this.ctx.fillStyle = `rgba(243, 244, 246, ${f.opacity})`;
+      this.ctx.fill();
+    }
+
+    this.animationId = requestAnimationFrame(() => this.animate());
+  }
+}
+
+// --- Festive Audio Chime (Zero External Assets) ---
+function playHolidayChime() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    if (ctx.state === "suspended") ctx.resume();
+
+    // Warm pentatonic bell chord: E6 (1318.5Hz), G#6 (1661.2Hz), B6 (1975.5Hz), E7 (2637.0Hz)
+    const freqs = [1318.5, 1661.2, 1975.5, 2637.0];
+    const now = ctx.currentTime;
+    freqs.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+
+      gain.gain.setValueAtTime(0.0001, now + idx * 0.07);
+      gain.gain.exponentialRampToValueAtTime(0.06, now + idx * 0.07 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.85);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now + idx * 0.07);
+      osc.stop(now + idx * 0.07 + 0.9);
+    });
+  } catch (e) {
+    // Audio optional, fail silently
+  }
+}
+
 // --- Confetti Particle System ---
 class ConfettiCannon {
   constructor(canvas) {
@@ -263,6 +370,9 @@ function generateDerangementCycle(names, exclusions = {}, maxAttempts = 5000) {
 
 // --- UI Management ---
 document.addEventListener("DOMContentLoaded", () => {
+  const snowCanvas = document.getElementById("snow-canvas");
+  const snow = new SnowSystem(snowCanvas);
+
   const canvas = document.getElementById("confetti-canvas");
   const confetti = new ConfettiCannon(canvas);
 
@@ -377,6 +487,7 @@ document.addEventListener("DOMContentLoaded", () => {
     giftWrapper.classList.add("hidden");
     unwrappedContent.classList.remove("hidden");
 
+    playHolidayChime();
     confetti.burst(centerX, centerY, 80);
   }
 
@@ -458,7 +569,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const budget = inputBudget ? inputBudget.value.trim() : "";
     const note = inputNote ? inputNote.value.trim() : "";
 
+    const btnGenerate = document.getElementById("btn-generate");
+    const origBtnHtml = btnGenerate.innerHTML;
+    btnGenerate.disabled = true;
+    btnGenerate.innerHTML = "<span>Ryster posen... 🎁</span>";
+
     try {
+      await new Promise((resolve) => setTimeout(resolve, 550));
       const pairs = generateDerangementCycle(rawNames, exclusions);
 
       // Base URL without hash
@@ -484,6 +601,9 @@ document.addEventListener("DOMContentLoaded", () => {
       renderGeneratedLinks();
     } catch (err) {
       alert(`Fejl under trækning: ${err.message}`);
+    } finally {
+      btnGenerate.disabled = false;
+      btnGenerate.innerHTML = origBtnHtml;
     }
   });
 

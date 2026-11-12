@@ -57,6 +57,16 @@ body {
   background-image: radial-gradient(circle at 50% 10%, #15241f 0%, #0a120f 80%);
 }
 
+#snow-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
 #confetti-canvas {
   position: fixed;
   top: 0;
@@ -74,6 +84,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
+  position: relative;
+  z-index: 1;
 }
 
 /* Header */
@@ -117,10 +129,10 @@ body {
 /* Card */
 .card {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(251, 191, 36, 0.16);
   border-radius: var(--radius-lg);
-  padding: 2rem;
-  box-shadow: var(--shadow-card);
+  padding: 2.25rem 2rem;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55), 0 0 36px rgba(217, 119, 6, 0.05);
 }
 
 .hidden {
@@ -293,20 +305,37 @@ body {
 
 .recipient-box {
   width: 100%;
-  padding: 1.5rem 1rem;
-  background: var(--bg-elevated);
-  border: 2px solid var(--border-subtle);
+  padding: 2.15rem 1.25rem 1.65rem;
+  background: linear-gradient(180deg, #16241f 0%, #101a16 100%);
+  border: 1px dashed rgba(251, 191, 36, 0.4);
   border-radius: var(--radius-md);
-  margin: 0.25rem 0;
+  margin: 0.5rem 0;
+  position: relative;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.recipient-box::before {
+  content: "";
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--gold-light);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .recipient-name {
   font-family: var(--font-serif);
-  font-size: 2.25rem;
+  font-size: 2.35rem;
   font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -0.01em;
+  color: var(--gold-light);
+  letter-spacing: 0.015em;
   word-break: break-word;
+  text-shadow: 0 2px 14px rgba(251, 191, 36, 0.25);
 }
 
 .meta-details {
@@ -605,14 +634,28 @@ textarea {
   background: var(--bg-input);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 0.6rem 0.85rem;
+  padding: 0.65rem 0.85rem;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.link-item:hover {
+  border-color: #2b4539;
+  background: #14221c;
 }
 
 .link-giver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-weight: 600;
   font-size: 0.9375rem;
   min-width: 90px;
   color: var(--text-primary);
+}
+
+.link-giver::before {
+  content: "🏷️";
+  font-size: 0.85rem;
 }
 
 .link-url-preview {
