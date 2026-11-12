@@ -99,38 +99,6 @@ class SnowSystem {
   }
 }
 
-// --- Festive Audio Chime (Zero External Assets) ---
-function playHolidayChime() {
-  try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    if (ctx.state === "suspended") ctx.resume();
-
-    // Warm pentatonic bell chord: E6 (1318.5Hz), G#6 (1661.2Hz), B6 (1975.5Hz), E7 (2637.0Hz)
-    const freqs = [1318.5, 1661.2, 1975.5, 2637.0];
-    const now = ctx.currentTime;
-    freqs.forEach((freq, idx) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, now + idx * 0.07);
-
-      gain.gain.setValueAtTime(0.0001, now + idx * 0.07);
-      gain.gain.exponentialRampToValueAtTime(0.06, now + idx * 0.07 + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.85);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(now + idx * 0.07);
-      osc.stop(now + idx * 0.07 + 0.9);
-    });
-  } catch (e) {
-    // Audio optional, fail silently
-  }
-}
-
 // --- Confetti Particle System ---
 class ConfettiCannon {
   constructor(canvas) {
@@ -487,7 +455,6 @@ document.addEventListener("DOMContentLoaded", () => {
     giftWrapper.classList.add("hidden");
     unwrappedContent.classList.remove("hidden");
 
-    playHolidayChime();
     confetti.burst(centerX, centerY, 80);
   }
 
