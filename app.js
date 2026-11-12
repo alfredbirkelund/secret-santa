@@ -307,7 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!hash.includes(".")) {
-      showError("Invalid link format. Missing encryption key fragment.");
+      showError("Ugyldigt link.");
       return;
     }
 
@@ -320,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
       displayReveal(data);
     } catch (err) {
       console.error("Decryption error:", err);
-      showError("Could not decrypt this link. The key or payload may be damaged.");
+      showError("Kunne ikke åbne dette link.");
     }
   }
 
@@ -335,8 +335,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function displayReveal(data) {
-    revealGiverName.textContent = data.giver || "Participant";
-    revealRecipient.textContent = data.recipient || "Secret Friend";
+    revealGiverName.textContent = data.giver || "Deltager";
+    revealRecipient.textContent = data.recipient || "—";
 
     let hasMeta = false;
     if (data.budget && data.budget.trim()) {
@@ -401,12 +401,12 @@ document.addEventListener("DOMContentLoaded", () => {
       await navigator.clipboard.writeText(name);
       const span = btnCopyRecipient.querySelector("span");
       const original = span.textContent;
-      span.textContent = "Copied! ✓";
+      span.textContent = "Kopieret! ✓";
       setTimeout(() => {
         span.textContent = original;
       }, 2000);
     } catch (e) {
-      alert(`Recipient: ${name}`);
+      alert(`Modtager: ${name}`);
     }
   });
 
