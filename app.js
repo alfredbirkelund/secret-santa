@@ -426,29 +426,31 @@ document.addEventListener("DOMContentLoaded", () => {
       .filter((n) => n.length > 0);
 
     if (rawNames.length < 2) {
-      alert("Please provide at least 2 participant names.");
+      alert("Indtast venligst mindst 2 deltagere.");
       return;
     }
 
     // Parse exclusions
     const exclusions = {};
-    const rawExcl = inputExclusions.value.split("\n");
-    for (let line of rawExcl) {
-      line = line.trim();
-      if (!line) continue;
-      if (line.includes("->")) {
-        const [a, b] = line.split("->").map((s) => s.trim());
-        if (a && b) {
-          if (!exclusions[a]) exclusions[a] = new Set();
-          exclusions[a].add(b);
-        }
-      } else if (line.includes(":")) {
-        const [a, b] = line.split(":").map((s) => s.trim());
-        if (a && b) {
-          if (!exclusions[a]) exclusions[a] = new Set();
-          if (!exclusions[b]) exclusions[b] = new Set();
-          exclusions[a].add(b);
-          exclusions[b].add(a);
+    if (inputExclusions) {
+      const rawExcl = inputExclusions.value.split("\n");
+      for (let line of rawExcl) {
+        line = line.trim();
+        if (!line) continue;
+        if (line.includes("->")) {
+          const [a, b] = line.split("->").map((s) => s.trim());
+          if (a && b) {
+            if (!exclusions[a]) exclusions[a] = new Set();
+            exclusions[a].add(b);
+          }
+        } else if (line.includes(":")) {
+          const [a, b] = line.split(":").map((s) => s.trim());
+          if (a && b) {
+            if (!exclusions[a]) exclusions[a] = new Set();
+            if (!exclusions[b]) exclusions[b] = new Set();
+            exclusions[a].add(b);
+            exclusions[b].add(a);
+          }
         }
       }
     }
@@ -481,7 +483,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderGeneratedLinks();
     } catch (err) {
-      alert(`Error generating draw: ${err.message}`);
+      alert(`Fejl under trækning: ${err.message}`);
     }
   });
 
@@ -501,16 +503,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const copyBtn = document.createElement("button");
       copyBtn.className = "btn btn-outline btn-copy-small";
-      copyBtn.textContent = "Copy Link";
+      copyBtn.textContent = "Kopier link";
       copyBtn.addEventListener("click", async () => {
         try {
           await navigator.clipboard.writeText(link);
-          copyBtn.textContent = "Copied! ✓";
+          copyBtn.textContent = "Kopieret! ✓";
           setTimeout(() => {
-            copyBtn.textContent = "Copy Link";
+            copyBtn.textContent = "Kopier link";
           }, 2000);
         } catch (e) {
-          prompt("Copy this link:", link);
+          prompt("Kopier dette link:", link);
         }
       });
 
@@ -524,49 +526,50 @@ document.addEventListener("DOMContentLoaded", () => {
     generatorResults.scrollIntoView({ behavior: "smooth" });
   }
 
-  // Copy all links
-  btnCopyAll.addEventListener("click", async () => {
-    if (currentDrawLinks.length === 0) return;
-    const text = currentDrawLinks
-      .map(({ giver, link }) => `${giver.padEnd(16)}: ${link}`)
-      .join("\n");
-    try {
-      await navigator.clipboard.writeText(text);
-      const span = btnCopyAll.querySelector("span");
-      const orig = span.textContent;
-      span.textContent = "All Links Copied! ✓";
-      setTimeout(() => {
-        span.textContent = orig;
-      }, 2000);
-    } catch (e) {
-      alert("Could not copy automatically. You can copy individual links below.");
-    }
-  });
+  // Copy all links (if button exists)
+  if (btnCopyAll) {
+    btnCopyAll.addEventListener("click", async () => {
+      if (currentDrawLinks.length === 0) return;
+      const text = currentDrawLinks
+        .map(({ giver, link }) => `${giver.padEnd(16)}: ${link}`)
+        .join("\n");
+      try {
+        await navigator.clipboard.writeText(text);
+        const span = btnCopyAll.querySelector("span");
+        const orig = span.textContent;
+        span.textContent = "Kopieret! ✓";
+        setTimeout(() => {
+          span.textContent = orig;
+        }, 2000);
+      } catch (e) {
+        alert("Kunne ikke kopiere automatisk.");
+      }
+    });
+  }
 
-  // Download .txt
-  btnDownloadTxt.addEventListener("click", () => {
-    if (currentDrawLinks.length === 0) return;
-    const text = [
-      "============================================================",
-      "🎄 SECRET SANTA DISTRIBUTION LINKS (ZERO-KNOWLEDGE)",
-      "============================================================",
-      "Send each person their private link below.",
-      "DO NOT OPEN OTHER PEOPLE'S LINKS!",
-      "------------------------------------------------------------",
-      ...currentDrawLinks.map(({ giver, link }) => `${giver.padEnd(16)}: ${link}`),
-      "============================================================",
-    ].join("\n");
+  // Download .txt (if button exists)
+  if (btnDownloadTxt) {
+    btnDownloadTxt.addEventListener("click", () => {
+      if (currentDrawLinks.length === 0) return;
+      const text = [
+        "============================================================",
+        "🎄 SECRET SANTA DISTRIBUTION LINKS",
+        "============================================================",
+        ...currentDrawLinks.map(({ giver, link }) => `${giver.padEnd(16)}: ${link}`),
+        "============================================================",
+      ].join("\n");
 
-    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "secret-santa-links.txt";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "secret-santa-links.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  }
 
   // Listen to hash changes
   window.addEventListener("hashchange", route);

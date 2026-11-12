@@ -20,7 +20,7 @@
     <section id="view-reveal" class="view hidden" aria-live="polite">
       <div class="card reveal-card">
         <div class="greeting-bar">
-          <span class="giver-label">Hej</span>
+          <span class="giver-label">KÆRE</span>
           <h2 id="reveal-giver-name" class="giver-name">—</h2>
         </div>
 
@@ -85,46 +85,26 @@
     <section id="view-generator" class="view hidden">
       <div class="card">
         <div class="generator-intro">
-          <h2>Draw Organizer</h2>
+          <h2>Opret trækning</h2>
         </div>
 
         <form id="draw-form" class="draw-form" onsubmit="return false;">
           <div class="form-group">
             <label for="input-names">
-              Participants <span class="required">*</span>
-              <span class="label-desc">One name per line (minimum 2 people)</span>
+              <span class="label-title">Deltagere <span class="required">*</span></span>
+              <span class="label-desc">Ét navn per linje (mindst 2 personer)</span>
             </label>
             <textarea id="input-names" rows="7" placeholder="Alice&#10;Bob&#10;Charlie&#10;David&#10;Emma&#10;Frank&#10;Grace&#10;Henry&#10;Isabella" required></textarea>
           </div>
 
-          <details class="exclusions-accordion">
-            <summary>Exclusion Rules</summary>
-            <div class="exclusions-content">
-              <p class="label-desc">One pair per line: <code>Alice:Bob</code> (neither can draw the other) or <code>Alice->Bob</code> (Alice cannot draw Bob).</p>
-              <textarea id="input-exclusions" rows="3" placeholder="Alice:Bob&#10;Charlie:David"></textarea>
-            </div>
-          </details>
-
           <button type="submit" id="btn-generate" class="btn btn-primary btn-block">
-            <span>Generate Secret Links 🎲</span>
+            <span>Træk lod 🎲</span>
           </button>
         </form>
 
         <div id="generator-results" class="generator-results hidden">
           <div class="results-header">
-            <h3>🎁 Secret Santa Links Ready!</h3>
-            <p>Send each link privately to that person (via Discord, WhatsApp, Messenger, etc.). <strong>Do not click them yourself!</strong></p>
-          </div>
-
-          <div class="bulk-actions">
-            <button id="btn-copy-all" class="btn btn-secondary">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-              <span>Copy All Links</span>
-            </button>
-            <button id="btn-download-txt" class="btn btn-outline">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              <span>Download .txt</span>
-            </button>
+            <h3>🎁 Links klar</h3>
           </div>
 
           <ul id="links-list" class="links-list"></ul>
